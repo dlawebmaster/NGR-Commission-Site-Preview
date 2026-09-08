@@ -445,17 +445,24 @@ body { font-family: 'Archivo', sans-serif; background: #f0ece6; color: #1a1a1a; 
         </div>
       </div>
 
-      <div class="course-card" data-status="new" data-type="College Readiness" data-prog="collegematch">
+      <!-- Ledger is a hosted app on its own subdomain, not a page in this repo.
+           It therefore has no data-prog key: progress is stored per-origin in
+           localStorage, and a page on scholarship-finder.dlaguideright.org
+           cannot write to this origin. A progress bar here could never move, so
+           the card presents itself as a tool to open rather than a course to
+           complete. It still counts toward "Available" in the stats row. -->
+      <div class="course-card" data-status="new" data-type="College Readiness">
         <div class="course-thumb">
-          <img src="/img/college_match_thumbnail.jpg" alt="College Match: Scholarship Finder">
+          <img src="/img/college_match_thumbnail.jpg" alt="Ledger — Scholarship Finder">
           <span class="course-badge badge-new">New</span>
         </div>
-        <div class="progress-bar"><div class="progress-fill" id="prog-collegematch" style="width:0%"></div></div>
         <div class="course-body">
           <div class="course-type">College Readiness</div>
-          <div class="course-title">College Match: Scholarship Finder</div>
-          <div class="course-meta">Interactive tool &nbsp;&middot;&nbsp; Self-paced</div>
-          <a class="btn-course btn-start" id="btn-collegematch" href="college_match.html" target="_blank">Start Course</a>
+          <div class="course-title">Ledger &mdash; Scholarship Finder</div>
+          <div class="course-meta">Interactive tool &nbsp;&middot;&nbsp; Opens in a new tab</div>
+          <a class="btn-course btn-start" id="btn-ledger"
+             href="https://scholarship-finder.dlaguideright.org/"
+             target="_blank" rel="noopener">Open Tool</a>
         </div>
       </div>
 
