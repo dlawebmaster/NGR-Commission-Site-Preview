@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ledger — Scholarship Finder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  :root{
+    --paper:#FAF7EF;
+    --ink:#1C2B22;
+    --ledger:#2F4B3C;
+    --gold:#B08D2F;
+    --coral:#C1502E;
+    --line:#DCD3B8;
+    --paper-raised:#FFFFFF;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.5;
+  }
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px;}
+
+  header.hero{
+    border-bottom:1px solid var(--line);
+    padding:56px 0 40px;
+  }
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--ledger);
+    margin:0 0 14px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(34px,5vw,54px);
+    line-height:1.05;
+    margin:0 0 18px;
+    max-width:760px;
+  }
+  h1 em{
+    font-style:italic;
+    color:var(--gold);
+  }
+  .sub{
+    font-size:16px;
+    color:#4a5a4f;
+    max-width:520px;
+    margin:0;
+  }
+
+  .award-slip{
+    margin-top:36px;
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:2px;
+    padding:20px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    box-shadow:0 1px 0 var(--line);
+    max-width:640px;
+  }
+  .award-slip .label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:#7a7362;
+    margin-bottom:4px;
+  }
+  .award-slip .amount{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:26px;
+    color:var(--ledger);
+    font-weight:500;
+  }
+  .award-slip .divider{width:1px;height:36px;background:var(--line);}
+
+  /* Search / filters */
+  section.finder{padding:44px 0;}
+  .modes{
+    display:flex;
+    gap:8px;
+    margin-bottom:28px;
+    border-bottom:1px solid var(--line);
+  }
+  .modes button{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:.03em;
+    background:none;
+    border:none;
+    padding:10px 4px;
+    margin-right:20px;
+    color:#8a8270;
+    cursor:pointer;
+    border-bottom:2px solid transparent;
+  }
+  .modes button.active{
+    color:var(--ledger);
+    border-bottom-color:var(--gold);
+  }
+
+  .profile-box{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:24px;
+    margin-bottom:28px;
+  }
+  .profile-box label{
+    display:block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    color:#7a7362;
+    margin-bottom:6px;
+  }
+  textarea{
+    width:100%;
+    min-height:88px;
+    font-family:'Inter',sans-serif;
+    font-size:15px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:12px 14px;
+    resize:vertical;
+    background:#fff;
+    color:var(--ink);
+  }
+  textarea:focus, input:focus, select:focus{
+    outline:2px solid var(--gold);
+    outline-offset:1px;
+  }
+
+  .filter-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:16px;
+    margin-top:18px;
+  }
+  .filter-grid .field input, .filter-grid .field select{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:3px;
+    background:#fff;
+    color:var(--ink);
+  }
+
+  .run-btn{
+    margin-top:20px;
+    background:var(--ledger);
+    color:var(--paper);
+    border:none;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:12px 22px;
+    border-radius:3px;
+    cursor:pointer;
+  }
+  .run-btn:hover{background:#243c30;}
+
+  .count-line{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:#7a7362;
+    margin:0 0 16px;
+  }
+
+  /* Results as award-ledger rows */
+  .result{
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:6px 24px;
+    padding:20px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .result:first-child{border-top:1px solid var(--line);}
+  .result h3{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:19px;
+    margin:0 0 6px;
+  }
+  .result .meta{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:#6b6553;
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+    margin-bottom:8px;
+  }
+  .result .meta span.deadline-soon{color:var(--coral);}
+  .result p.desc{
+    font-size:14px;
+    color:#4a5a4f;
+    margin:0;
+    max-width:620px;
+  }
+  .result .amount-col{
+    text-align:right;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:20px;
+    color:var(--gold);
+    white-space:nowrap;
+  }
+  .result a.apply{
+    display:inline-block;
+    margin-top:8px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ledger);
+    text-decoration:none;
+    border-bottom:1px solid var(--gold);
+  }
+
+  .empty{
+    text-align:center;
+    padding:60px 20px;
+    color:#8a8270;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+  }
+
+  footer{
+    border-top:1px solid var(--line);
+    padding:28px 0 44px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    color:#8a8270;
+  }
+
+  @media (max-width:640px){
+    .award-slip{flex-wrap:wrap;}
+    .result{grid-template-columns:1fr;}
+    .result .amount-col{text-align:left;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="hero">
+    <p class="eyebrow">Scholarship Finder — Prototype</p>
+    <h1>Every award you<br><em>qualify for</em>, in one ledger.</h1>
+    <p class="sub">Tell it who you are once. It matches you against state and national scholarships — and still lets you browse everything on your own.</p>
+
+    <div class="award-slip">
+      <div>
+        <div class="label">Example result — Terry Foundation Scholarship</div>
+        <div class="amount">$2,500</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div class="label">Deadline</div>
+        <div class="amount" style="font-size:16px;color:var(--ink);">Mar 15</div>
+      </div>
+      <div class="divider"></div>
+      <div>
+        <div class="label">Scope</div>
+        <div class="amount" style="font-size:16px;color:var(--ink);">State (TX)</div>
+      </div>
+    </div>
+    <p style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:#8a8270;margin-top:8px;">Illustrative example only — not a live result. Real results appear below with full details and an apply link.</p>
+  </header>
+
+  <section class="finder">
+    <div class="modes">
+      <button class="active" data-mode="match" id="modeMatchBtn">Match me</button>
+      <button data-mode="browse" id="modeBrowseBtn">Browse all</button>
+      <button data-mode="admin" id="modeAdminBtn" style="margin-left:auto;">+ Add scholarship</button>
+    </div>
+
+    <div class="profile-box" id="matchPanel">
+      <label for="bio">Describe yourself — GPA, major, state, year, anything relevant</label>
+      <textarea id="bio" placeholder="e.g. I'm a junior in Texas, 3.6 GPA, studying nursing, first-generation college student."></textarea>
+
+      <div class="filter-grid">
+        <div class="field">
+          <label for="gpa">Min GPA</label>
+          <input type="number" step="0.1" min="0" max="4" id="gpa" placeholder="3.5">
+        </div>
+        <div class="field">
+          <label for="state">State</label>
+          <select id="state"></select>
+        </div>
+        <div class="field">
+          <label for="major">Major</label>
+          <input type="text" id="major" placeholder="Nursing">
+        </div>
+        <div class="field">
+          <label for="level">Level</label>
+          <select id="level">
+            <option value="">Any</option>
+            <option value="high_school">High school</option>
+            <option value="undergrad">Undergrad</option>
+            <option value="grad">Grad</option>
+            <option value="associate">Associate</option>
+            <option value="vocational">Vocational</option>
+            <option value="professional">Professional development</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="keyword">Award name / keyword</label>
+          <input type="text" id="keyword" placeholder="e.g. engineering, Terry Foundation">
+        </div>
+        <div class="field">
+          <label for="awardType">Award type</label>
+          <select id="awardType">
+            <option value="">Any</option>
+            <option value="Scholarship">Scholarship</option>
+            <option value="Fellowship">Fellowship</option>
+            <option value="Grant">Grant</option>
+            <option value="Prize">Prize</option>
+            <option value="Public Grant">Public Grant</option>
+            <option value="Loan">Loan</option>
+          </select>
+        </div>
+      </div>
+      <button class="run-btn" id="runMatch">Find my matches</button>
+    </div>
+
+    <div class="profile-box" id="browsePanel" style="display:none;">
+      <div class="filter-grid" style="margin-top:0;">
+        <div class="field">
+          <label for="keywordFilter">Award name / keyword</label>
+          <input type="text" id="keywordFilter" placeholder="e.g. nursing, Kappa">
+        </div>
+        <div class="field">
+          <label for="scopeFilter">Scope</label>
+          <select id="scopeFilter">
+            <option value="">All</option>
+            <option value="national">National</option>
+            <option value="state">State</option>
+            <option value="international">International</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="stateFilter">State</label>
+          <select id="stateFilter"></select>
+        </div>
+        <div class="field">
+          <label for="levelFilter">Level of study</label>
+          <select id="levelFilter">
+            <option value="">Any</option>
+            <option value="high_school">High school</option>
+            <option value="undergrad">Undergrad</option>
+            <option value="grad">Grad</option>
+            <option value="associate">Associate</option>
+            <option value="vocational">Vocational</option>
+            <option value="professional">Professional development</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="awardTypeFilter">Award type</label>
+          <select id="awardTypeFilter">
+            <option value="">Any</option>
+            <option value="Scholarship">Scholarship</option>
+            <option value="Fellowship">Fellowship</option>
+            <option value="Grant">Grant</option>
+            <option value="Prize">Prize</option>
+            <option value="Public Grant">Public Grant</option>
+            <option value="Loan">Loan</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="amountFilter">Min amount</label>
+          <input type="number" id="amountFilter" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="deadlineFilter">Deadline before</label>
+          <input type="date" id="deadlineFilter">
+        </div>
+      </div>
+      <button class="run-btn" id="runBrowse">Apply filters</button>
+    </div>
+
+    <div class="profile-box" id="adminPanel" style="display:none;">
+      <label>Add a scholarship to the live database</label>
+      <div class="filter-grid" style="grid-template-columns:1fr;">
+        <div class="field"><input type="text" id="a_name" placeholder="Scholarship name"></div>
+        <div class="field"><textarea id="a_desc" placeholder="Short description" style="min-height:60px;"></textarea></div>
+      </div>
+      <div class="filter-grid">
+        <div class="field"><label>Amount min</label><input type="number" id="a_amin" placeholder="1000"></div>
+        <div class="field"><label>Amount max</label><input type="number" id="a_amax" placeholder="5000"></div>
+        <div class="field"><label>Deadline</label><input type="date" id="a_deadline"></div>
+        <div class="field"><label>Scope</label>
+          <select id="a_scope">
+            <option value="national">National</option>
+            <option value="state">State</option>
+            <option value="international">International</option>
+          </select>
+        </div>
+        <div class="field"><label>State (if scope=state)</label><input type="text" id="a_state" placeholder="TX"></div>
+        <div class="field"><label>Min GPA</label><input type="number" step="0.1" id="a_gpa" placeholder="3.0"></div>
+        <div class="field"><label>Majors (comma-separated, or "any")</label><input type="text" id="a_majors" placeholder="any"></div>
+        <div class="field"><label>Application URL</label><input type="text" id="a_url" placeholder="https://..."></div>
+      </div>
+      <button class="run-btn" id="submitScholarship">Save to database</button>
+      <p id="adminStatus" style="font-family:'IBM Plex Mono',monospace;font-size:12px;margin-top:10px;"></p>
+    </div>
+
+    <p class="count-line" id="countLine"></p>
+    <div id="results"></div>
+  </section>
+
+  <footer>
+    <p style="margin:0 0 12px;">Data will be used and displayed on a scholarship-search website built for students to find financial aid opportunities. The site lets a student enter their GPA, major, state, and education level, and returns matching scholarships from CareerOneStop's Scholarship Finder alongside a small set of independently-curated listings. Results are displayed publicly on the site's search/browse pages — showing scholarship name, amount, deadline, and a link to the sponsor's official application page. Data will not be sold, resold, or used for any purpose other than helping students discover scholarships they may be eligible for.</p>
+    <p style="margin:0;">Information provided under license by Gale Group, Inc., a part of Cengage Learning, Inc. All Rights Reserved. Some information provided by CareerOneStop, sponsored by the U.S. Department of Labor, Employment and Training Administration.</p>
+  </footer>
+</div>
+
+<script>
+// ---- Supabase connection ----
+const SUPABASE_URL = "https://atppxwemihizteogcuud.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF0cHB4d2VtaWhpenRlb2djdXVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODUzNDk5ODcsImV4cCI6MjEwMDkyNTk4N30.ybIkbng_hoYiiJcwC2qemm6JIvPq3TCfzjCxIekq4Ws";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+let LIVE_DATA = [];  // populated from Supabase on load; falls back to SAMPLE if the fetch fails
+
+async function loadScholarships(){
+  try{
+    const { data, error } = await sb.from('scholarships').select('*').order('deadline', { ascending: true });
+    if(error) throw error;
+    if(data && data.length){
+      LIVE_DATA = data;
+      return data;
+    }
+    // table exists but is empty — fall back to sample so the demo isn't blank
+    LIVE_DATA = SAMPLE;
+    return SAMPLE;
+  }catch(err){
+    console.warn("Supabase fetch failed, using sample data:", err.message);
+    LIVE_DATA = SAMPLE;
+    return SAMPLE;
+  }
+}
+
+// ---- Sample dataset (offline fallback only — real data lives in Supabase) ----
+const SAMPLE = [
+  {name:"Terry Foundation Scholarship", amount_min:6000, amount_max:6000, deadline:"2027-02-01", scope:"state", eligible_states:["TX"], min_gpa:3.0, majors:["any"], education_level:["undergrad"], need_based:true, essay_required:true, demographic_tags:[], description:"Renewable award for Texas residents attending a partner Texas public university.", application_url:"#"},
+  {name:"UNCF/Denny's Hungry for Education", amount_min:1000, amount_max:10000, deadline:"2027-01-15", scope:"national", eligible_states:[], min_gpa:2.5, majors:["any"], education_level:["undergrad"], need_based:true, essay_required:true, demographic_tags:["underrepresented_minority"], description:"National award supporting students from underrepresented backgrounds pursuing any major.", application_url:"#"},
+  {name:"AACP Walmart Scholars Award", amount_min:5000, amount_max:5000, deadline:"2026-12-01", scope:"national", eligible_states:[], min_gpa:3.2, majors:["Pharmacy"], education_level:["undergrad","grad"], need_based:false, essay_required:false, demographic_tags:[], description:"Supports students enrolled in a PharmD program with demonstrated leadership.", application_url:"#"},
+  {name:"Texas Nursing Workforce Grant", amount_min:2000, amount_max:4000, deadline:"2027-03-15", scope:"state", eligible_states:["TX"], min_gpa:2.75, majors:["Nursing"], education_level:["undergrad"], need_based:false, essay_required:false, demographic_tags:[], description:"State-funded award for Texas residents enrolled in an accredited nursing program.", application_url:"#"},
+  {name:"Kappa Alpha Psi Education Foundation Grant", amount_min:1000, amount_max:3000, deadline:"2027-04-01", scope:"national", eligible_states:[], min_gpa:2.5, majors:["any"], education_level:["high_school","undergrad"], need_based:true, essay_required:true, demographic_tags:["first_gen"], description:"Supports young men pursuing higher education, awarded through local chapters nationwide.", application_url:"#"},
+  {name:"Fulbright Foreign Study Award", amount_min:0, amount_max:40000, deadline:"2026-10-08", scope:"international", eligible_countries:["*"], min_gpa:3.0, majors:["any"], education_level:["grad"], need_based:false, essay_required:true, demographic_tags:[], description:"Fully funded international study/research grant open to graduate-level applicants worldwide.", application_url:"#"},
+  {name:"Dell Scholars Program", amount_min:20000, amount_max:20000, deadline:"2027-01-06", scope:"national", eligible_states:[], min_gpa:2.4, majors:["any"], education_level:["undergrad"], need_based:true, essay_required:true, demographic_tags:["first_gen"], description:"Multi-year award for students who've overcome significant obstacles to pursue college.", application_url:"#"},
+  {name:"Oklahoma Higher Learning Access Grant", amount_min:1500, amount_max:1500, deadline:"2027-02-20", scope:"state", eligible_states:["OK"], min_gpa:2.5, majors:["any"], education_level:["undergrad"], need_based:true, essay_required:false, demographic_tags:[], description:"Need-based grant for Oklahoma residents at any accredited in-state institution.", application_url:"#"},
+];
+
+const STATES = ["","AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+
+function populateStateSelects(){
+  ["state","stateFilter"].forEach(id=>{
+    const sel = document.getElementById(id);
+    STATES.forEach(s=>{
+      const opt = document.createElement("option");
+      opt.value = s;
+      opt.textContent = s === "" ? "Any" : s;
+      sel.appendChild(opt);
+    });
+  });
+}
+populateStateSelects();
+
+function fmtDeadline(d){
+  if(!d) return "Rolling / no fixed date";
+  const date = new Date(d + "T00:00:00");
+  return date.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+}
+function isSoon(d){
+  if(!d) return false;
+  const diff = (new Date(d) - new Date());
+  return diff > 0 && diff < 1000*60*60*24*45; // within 45 days
+}
+function fmtAmount(min,max){
+  if(min == null && max == null) return "Amount varies";
+  min = min ?? max;
+  max = max ?? min;
+  if(min===max) return "$"+min.toLocaleString();
+  return "$"+min.toLocaleString()+" – $"+max.toLocaleString();
+}
+
+function renderResults(list){
+  const el = document.getElementById("results");
+  const count = document.getElementById("countLine");
+  count.textContent = list.length + (list.length===1 ? " match" : " matches");
+  if(list.length===0){
+    el.innerHTML = '<div class="empty">No scholarships matched. Try loosening a filter — a lower GPA floor or removing the state usually opens things up.</div>';
+    return;
+  }
+  el.innerHTML = list.map(s=>`
+    <div class="result">
+      <div>
+        <h3>${s.name}</h3>
+        <div class="meta">
+          <span>${s.scope.toUpperCase()}${s.eligible_states && s.eligible_states.length ? " · "+s.eligible_states.join(", ") : ""}</span>
+          ${s.award_type && s.award_type.length ? `<span>${s.award_type.join(" / ")}</span>` : ''}
+          <span class="${isSoon(s.deadline)?'deadline-soon':''}">Due ${fmtDeadline(s.deadline)}</span>
+          ${s.min_gpa ? `<span>Min GPA ${s.min_gpa}</span>` : ''}
+        </div>
+        <p class="desc">${s.description}</p>
+        <a class="apply" href="${s.application_url}">View details →</a>
+      </div>
+      <div class="amount-col">${fmtAmount(s.amount_min,s.amount_max)}</div>
+    </div>
+  `).join("");
+}
+
+// naive free-text -> filter extraction (stand-in for the real Claude API call)
+function parseBio(text){
+  const out = {};
+  const gpaMatch = text.match(/(\d\.\d{1,2})\s*gpa/i);
+  if(gpaMatch) out.gpa = parseFloat(gpaMatch[1]);
+  const stateMatch = STATES.find(s => s && new RegExp("\\b"+s+"\\b").test(text));
+  if(stateMatch) out.state = stateMatch;
+  const majors = ["nursing","pharmacy","engineering","business","education","biology","psychology"];
+  const majorMatch = majors.find(m => text.toLowerCase().includes(m));
+  if(majorMatch) out.major = majorMatch;
+  if(/first.?gen/i.test(text)) out.first_gen = true;
+  return out;
+}
+
+function runMatch(){
+  const bioText = document.getElementById("bio").value;
+  const parsed = parseBio(bioText);
+  const gpa = parseFloat(document.getElementById("gpa").value) || parsed.gpa || 0;
+  const state = document.getElementById("state").value || parsed.state || "";
+  const major = (document.getElementById("major").value || parsed.major || "").toLowerCase();
+  const level = document.getElementById("level").value;
+  const keyword = document.getElementById("keyword").value.trim().toLowerCase();
+  const awardType = document.getElementById("awardType").value;
+
+  const filtered = LIVE_DATA.filter(s=>{
+    const majors = s.majors || [];
+    const educationLevel = s.education_level || [];
+    const awardTypes = s.award_type || [];
+    if(gpa && s.min_gpa && gpa < s.min_gpa) return false;
+    if(state && s.scope==="state" && !(s.eligible_states||[]).includes(state)) return false;
+    if(major && !majors.includes("any") && !majors.some(m=>m.toLowerCase().includes(major))) return false;
+    if(level && !educationLevel.includes(level)) return false;
+    if(awardType && !awardTypes.includes(awardType)) return false;
+    if(keyword){
+      const haystack = ((s.name||"") + " " + (s.description||"")).toLowerCase();
+      if(!haystack.includes(keyword)) return false;
+    }
+    return true;
+  });
+  renderResults(filtered);
+}
+
+function runBrowse(){
+  const scope = document.getElementById("scopeFilter").value;
+  const state = document.getElementById("stateFilter").value;
+  const level = document.getElementById("levelFilter").value;
+  const awardType = document.getElementById("awardTypeFilter").value;
+  const minAmount = parseFloat(document.getElementById("amountFilter").value) || 0;
+  const deadlineBefore = document.getElementById("deadlineFilter").value;
+  const keyword = document.getElementById("keywordFilter").value.trim().toLowerCase();
+
+  const filtered = LIVE_DATA.filter(s=>{
+    const educationLevel = s.education_level || [];
+    const awardTypes = s.award_type || [];
+    if(scope && s.scope!==scope) return false;
+    if(state && s.scope==="state" && !(s.eligible_states||[]).includes(state)) return false;
+    if(level && !educationLevel.includes(level)) return false;
+    if(awardType && !awardTypes.includes(awardType)) return false;
+    if(minAmount && (s.amount_max||0) < minAmount) return false;
+    if(deadlineBefore && s.deadline && new Date(s.deadline) > new Date(deadlineBefore)) return false;
+    if(keyword){
+      const haystack = ((s.name||"") + " " + (s.description||"")).toLowerCase();
+      if(!haystack.includes(keyword)) return false;
+    }
+    return true;
+  });
+  renderResults(filtered);
+}
+
+async function submitScholarship(){
+  const status = document.getElementById("adminStatus");
+  const majorsRaw = document.getElementById("a_majors").value.trim();
+  const majors = majorsRaw ? majorsRaw.split(",").map(m=>m.trim()) : ["any"];
+  const stateRaw = document.getElementById("a_state").value.trim().toUpperCase();
+  const scope = document.getElementById("a_scope").value;
+
+  const row = {
+    name: document.getElementById("a_name").value.trim(),
+    description: document.getElementById("a_desc").value.trim(),
+    amount_min: parseInt(document.getElementById("a_amin").value) || 0,
+    amount_max: parseInt(document.getElementById("a_amax").value) || 0,
+    deadline: document.getElementById("a_deadline").value || null,
+    scope: scope,
+    eligible_states: scope === "state" && stateRaw ? [stateRaw] : [],
+    min_gpa: parseFloat(document.getElementById("a_gpa").value) || null,
+    majors: majors,
+    education_level: ["undergrad"],
+    application_url: document.getElementById("a_url").value.trim(),
+  };
+
+  if(!row.name){
+    status.textContent = "Name is required.";
+    status.style.color = "var(--coral)";
+    return;
+  }
+
+  status.textContent = "Saving…";
+  status.style.color = "#7a7362";
+
+  const { error } = await sb.from('scholarships').insert(row);
+  if(error){
+    status.textContent = "Error: " + error.message;
+    status.style.color = "var(--coral)";
+    return;
+  }
+  status.textContent = "Saved. It'll show up in Browse all.";
+  status.style.color = "var(--ledger)";
+  ["a_name","a_desc","a_amin","a_amax","a_deadline","a_state","a_gpa","a_majors","a_url"].forEach(id=>{
+    document.getElementById(id).value = "";
+  });
+  await loadScholarships();
+}
+
+document.getElementById("runMatch").addEventListener("click", runMatch);
+document.getElementById("runBrowse").addEventListener("click", runBrowse);
+
+document.getElementById("submitScholarship").addEventListener("click", submitScholarship);
+
+function setMode(mode){
+  document.getElementById("modeMatchBtn").classList.toggle("active", mode==="match");
+  document.getElementById("modeBrowseBtn").classList.toggle("active", mode==="browse");
+  document.getElementById("matchPanel").style.display = mode==="match" ? "block" : "none";
+  document.getElementById("browsePanel").style.display = mode==="browse" ? "block" : "none";
+  document.getElementById("adminPanel").style.display = mode==="admin" ? "block" : "none";
+  document.getElementById("results").innerHTML = "";
+  document.getElementById("countLine").textContent = "";
+}
+document.getElementById("modeMatchBtn").addEventListener("click", ()=>setMode("match"));
+document.getElementById("modeBrowseBtn").addEventListener("click", ()=>setMode("browse"));
+document.getElementById("modeAdminBtn").addEventListener("click", ()=>setMode("admin"));
+
+// load real data from Supabase on start, then show it in Browse-all style
+(async function init(){
+  const data = await loadScholarships();
+  renderResults(data);
+})();
+</script>
+
+</body>
+</html>
