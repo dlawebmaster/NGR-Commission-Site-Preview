@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kappa League iGrad Module Tracker</title>
+<style>
+  :root{
+    --crimson:#70110c;
+    --crimson-dk:#4d0b08;
+    --crimson-lt:#8f1a13;
+    --gold:#d4af37;
+    --gold-lt:#f2e0a2;
+    --gold-dk:#a8871f;
+    --white:#ffffff;
+    --cream:#faf7f1;
+    --ink:#241a19;
+    --muted:#6d5f5d;
+    --line:#e3d9d4;
+    --ok:#1f6b3a;
+    --warn:#9a5b00;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(36,26,25,.06), 0 6px 18px rgba(36,26,25,.06);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--cream);
+    color:var(--ink);
+    font:16px/1.55 "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap{max-width:1120px;margin:0 auto;padding:0 20px 72px}
+
+  /* ---------- Masthead ---------- */
+  header.masthead{
+    background:var(--crimson);
+    color:var(--white);
+    border-bottom:6px solid var(--gold);
+  }
+  .masthead-inner{max-width:1120px;margin:0 auto;padding:26px 20px 22px;display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .crest{
+    width:58px;height:58px;flex:0 0 58px;border-radius:50%;
+    background:var(--white);color:var(--crimson);
+    display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:22px;letter-spacing:.5px;
+    border:3px solid var(--gold);
+  }
+  .masthead h1{margin:0;font-size:25px;line-height:1.2;letter-spacing:.2px}
+  .masthead .sub{margin:4px 0 0;font-size:14px;color:var(--gold-lt);letter-spacing:.4px;text-transform:uppercase;font-weight:600}
+  .masthead .kicker{margin:2px 0 0;font-size:13.5px;color:rgba(255,255,255,.82)}
+
+  /* ---------- Deadline strip ---------- */
+  .deadlines{background:var(--crimson-dk);color:var(--white)}
+  .deadlines-inner{max-width:1120px;margin:0 auto;padding:12px 20px;display:flex;gap:28px;flex-wrap:wrap;align-items:center;font-size:14px}
+  .deadlines b{color:var(--gold-lt)}
+  .deadlines .dl{display:flex;gap:8px;align-items:baseline}
+  .pill{display:inline-block;background:var(--gold);color:var(--crimson-dk);font-weight:700;font-size:12px;padding:2px 9px;border-radius:999px;letter-spacing:.3px}
+
+  /* ---------- Cards ---------- */
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-top:22px}
+  .card-hd{
+    display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:14px 18px;border-bottom:1px solid var(--line);
+  }
+  .card-hd h2{margin:0;font-size:16px;letter-spacing:.6px;text-transform:uppercase;color:var(--crimson)}
+  .card-bd{padding:18px}
+
+  /* ---------- Forms ---------- */
+  .grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  label{display:block;font-size:12.5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+  input[type=text],input[type=date],select{
+    width:100%;padding:9px 11px;font:inherit;font-size:15px;color:var(--ink);
+    background:var(--white);border:1px solid var(--line);border-radius:7px;
+  }
+  input:focus,select:focus{outline:2px solid var(--gold);outline-offset:1px;border-color:var(--gold-dk)}
+
+  /* ---------- Buttons ---------- */
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;
+    font:inherit;font-size:14px;font-weight:700;letter-spacing:.3px;
+    padding:9px 16px;border-radius:7px;border:1px solid transparent;cursor:pointer;
+    background:var(--crimson);color:var(--white);
+  }
+  .btn:hover{background:var(--crimson-lt)}
+  .btn.gold{background:var(--gold);color:var(--crimson-dk);border-color:var(--gold-dk)}
+  .btn.gold:hover{background:var(--gold-lt)}
+  .btn.ghost{background:var(--white);color:var(--crimson);border-color:var(--crimson)}
+  .btn.ghost:hover{background:#fbf1f0}
+  .btn.sm{font-size:13px;padding:6px 12px}
+  .btn.danger{background:var(--white);color:#8a2318;border-color:#d9b3ae}
+  .btn.danger:hover{background:#fdf2f1}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap}
+
+  /* ---------- Roster summary table ---------- */
+  .tbl{width:100%;border-collapse:collapse;font-size:14.5px}
+  .tbl th{
+    text-align:left;background:var(--crimson);color:var(--white);
+    font-size:12px;letter-spacing:.6px;text-transform:uppercase;padding:10px 12px;
+  }
+  .tbl td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tbl tbody tr:nth-child(even){background:#fcfaf7}
+  .tbl .num{text-align:center;white-space:nowrap}
+
+  .bar{height:9px;background:var(--line);border-radius:999px;overflow:hidden;min-width:110px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--crimson),var(--gold));border-radius:999px}
+
+  .tierdots{display:flex;gap:4px}
+  .tierdots span{
+    width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);background:var(--white);
+    font-size:10.5px;font-weight:700;color:var(--muted);display:flex;align-items:center;justify-content:center;
+  }
+  .tierdots span.on{background:var(--gold);border-color:var(--gold-dk);color:var(--crimson-dk)}
+
+  .lvl{display:inline-block;font-size:11.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:var(--gold);color:var(--crimson-dk);letter-spacing:.3px}
+  .lvl.none{background:#efeae4;color:var(--muted)}
+
+  /* ---------- Leaguer detail ---------- */
+  .leaguer{border:1px solid var(--line);border-radius:var(--radius);margin-bottom:14px;overflow:hidden;background:var(--white)}
+  .leaguer-hd{
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:12px 15px;background:#fbf6f5;border-bottom:1px solid var(--line);cursor:pointer;
+  }
+  .leaguer-hd .nm{font-weight:800;font-size:16px;color:var(--crimson);flex:1 1 auto;min-width:160px}
+  .leaguer-hd .meta{font-size:13px;color:var(--muted)}
+  .chev{font-size:12px;color:var(--muted);transition:transform .15s ease}
+  .leaguer.open .chev{transform:rotate(90deg)}
+  .leaguer-bd{display:none;padding:6px 15px 16px}
+  .leaguer.open .leaguer-bd{display:block}
+
+  .tier{margin-top:14px;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+  .tier-hd{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+    padding:8px 13px;background:var(--crimson);color:var(--white);
+    font-size:13px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+  }
+  .tier-hd .st{font-size:11.5px;font-weight:700;background:rgba(255,255,255,.16);padding:2px 9px;border-radius:999px;text-transform:none;letter-spacing:.2px}
+  .tier-hd .st.done{background:var(--gold);color:var(--crimson-dk)}
+  .mod{display:flex;align-items:center;gap:12px;padding:9px 13px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .mod:last-child{border-bottom:0}
+  .mod input[type=checkbox]{width:19px;height:19px;accent-color:var(--crimson);flex:0 0 auto;cursor:pointer}
+  .mod .mname{flex:1 1 260px;font-size:15px}
+  .mod.done .mname{color:var(--ok);font-weight:600}
+  .mod .dwrap{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+  .mod .dwrap label{margin:0;font-size:11px}
+  .mod input[type=date]{width:165px;padding:6px 9px;font-size:14px}
+  .mod .late{color:var(--warn);font-size:12px;font-weight:700}
+
+  .note{font-size:13.5px;color:var(--muted);margin:0}
+  .empty{text-align:center;padding:34px 18px;color:var(--muted)}
+  .empty p{margin:0 0 14px}
+
+  footer.subinfo{margin-top:26px;border-left:5px solid var(--gold);background:var(--white);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow);border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  footer.subinfo h3{margin:0 0 8px;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--crimson)}
+  footer.subinfo ul{margin:8px 0 0;padding-left:20px;font-size:14.5px}
+  footer.subinfo a{color:var(--crimson);font-weight:600}
+
+  .toast{
+    position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);
+    background:var(--crimson-dk);color:var(--white);padding:11px 20px;border-radius:8px;
+    font-size:14px;font-weight:600;box-shadow:var(--shadow);border:1px solid var(--gold);
+    opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* ---------- Print / certificate view ---------- */
+  #printArea{display:none}
+  @media print{
+    body{background:var(--white)}
+    header.masthead,.deadlines,.card,footer.subinfo,.toast,.noprint{display:none !important}
+    .wrap{padding:0;max-width:none}
+    #printArea{display:block}
+    .psheet{page-break-after:always;padding:0 0 10px}
+    .psheet:last-child{page-break-after:auto}
+    @page{margin:14mm}
+  }
+  .psheet{font-size:12px;color:#000}
+  .phd{border-bottom:3px solid var(--crimson);padding-bottom:8px;margin-bottom:10px}
+  .phd h2{margin:0;font-size:19px;color:var(--crimson);letter-spacing:.3px}
+  .phd .porg{font-size:11px;letter-spacing:1.2px;text-transform:uppercase;color:#444;margin-top:3px}
+  .pmeta{display:flex;flex-wrap:wrap;gap:6px 26px;margin:10px 0 12px;font-size:12px}
+  .pmeta div{min-width:180px}
+  .pmeta b{color:var(--crimson)}
+  table.ptbl{width:100%;border-collapse:collapse;font-size:11.5px}
+  table.ptbl th{background:var(--crimson);color:#fff;text-align:left;padding:5px 7px;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
+  table.ptbl td{border-bottom:1px solid #ccc;padding:5px 7px}
+  table.ptbl td.tr{white-space:nowrap;font-weight:700;color:var(--crimson)}
+  .pstat{margin:12px 0;padding:9px 12px;border:2px solid var(--gold);border-radius:6px;font-size:12.5px}
+  .psign{display:flex;gap:40px;margin-top:26px;font-size:11px}
+  .psign div{flex:1;border-top:1px solid #000;padding-top:4px}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <div class="crest">ΚΛ</div>
+    <div>
+      <h1>Kappa League &middot; iGrad Financial Literacy Module Tracker</h1>
+      <p class="sub">National Guide Right Financial Literacy Initiative</p>
+      <p class="kicker">Self-paced modules at guideright.igrad.com &mdash; 7 Tiers, 21 modules &mdash; 2026&ndash;2027 program year</p>
+    </div>
+  </div>
+</header>
+
+<div class="deadlines">
+  <div class="deadlines-inner">
+    <div class="dl"><span class="pill">Fall Semester</span> <span>Due <b>December 31, 2026</b></span></div>
+    <div class="dl"><span class="pill">Spring Semester</span> <span>Due <b>May 31, 2027</b></span></div>
+    <div class="dl"><span>Recognition awarded in increments of <b>every two Tiers</b> completed</span></div>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- Chapter information -->
+  <section class="card">
+    <div class="card-hd"><h2>Chapter Information</h2><span class="note">Saved automatically in this browser</span></div>
+    <div class="card-bd">
+      <div class="grid">
+        <div>
+          <label for="chapter">Chapter Name</label>
+          <input type="text" id="chapter" placeholder="e.g. Denton-Lewisville Alumni">
+        </div>
+        <div>
+          <label for="province">Province</label>
+          <input type="text" id="province" placeholder="e.g. Southwestern">
+        </div>
+        <div>
+          <label for="director">Kappa League / Guide Right Director</label>
+          <input type="text" id="director" placeholder="Full name">
+        </div>
+        <div>
+          <label for="semester">Reporting Period</label>
+          <select id="semester">
+            <option value="Fall 2026">Fall 2026 &mdash; due Dec 31, 2026</option>
+            <option value="Spring 2027">Spring 2027 &mdash; due May 31, 2027</option>
+            <option value="2026-2027 Program Year">Full 2026&ndash;2027 Program Year</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roster summary -->
+  <section class="card">
+    <div class="card-hd">
+      <h2>Chapter Roster Summary</h2>
+      <div class="btnrow noprint">
+        <button class="btn gold" id="btnExport">Export CSV</button>
+        <button class="btn ghost" id="btnPrint">Print Records</button>
+        <button class="btn danger sm" id="btnClear">Clear All</button>
+      </div>
+    </div>
+    <div class="card-bd">
+      <div id="summaryWrap"></div>
+    </div>
+  </section>
+
+  <!-- Leaguers -->
+  <section class="card">
+    <div class="card-hd">
+      <h2>Kappa Leaguers &amp; Module Completion</h2>
+      <div class="btnrow noprint">
+        <input type="text" id="newName" placeholder="Kappa Leaguer's name" style="width:230px">
+        <button class="btn" id="btnAdd">+ Add Kappa Leaguer</button>
+      </div>
+    </div>
+    <div class="card-bd">
+      <div id="leaguerList"></div>
+    </div>
+  </section>
+
+  <footer class="subinfo">
+    <h3>Submitting Completions</h3>
+    <p class="note">Once the modules are completed, email the National Guide Right Executive Committee &mdash; <b>Draon Glenn</b>, <a href="mailto:draonglenn@gmail.com">draonglenn@gmail.com</a> &mdash; and attach the exported CSV.</p>
+    <ul>
+      <li>Chapter Name</li>
+      <li>Chapter Province</li>
+      <li>Email subject line format: <b>&ldquo;St. Louis Kappa League Module Completion&rdquo;</b> (substitute your chapter name)</li>
+    </ul>
+    <p class="note" style="margin-top:10px">Chapters, Provinces, and Kappa Leaguers are recognized through social media and apparel for every two Tiers completed. Students register at <b>guideright.igrad.com</b>.</p>
+  </footer>
+
+  <div id="printArea"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var STORAGE_KEY = "kappaLeagueIgradTracker_v1";
+
+  var TIERS = [
+    { tier: 1, modules: [
+      "Banking with Financial Institutions",
+      "Creating a Budget (and sticking to it)",
+      "Setting Up an Emergency Fund" ]},
+    { tier: 2, modules: [
+      "Understanding Credit Reports & Scores",
+      "Choosing a School and Understanding the Cost",
+      "Finding Scholarships to help pay for school" ]},
+    { tier: 3, modules: [
+      "Finding Your Dream Career",
+      "Borrowing Smart and Preparing for Higher Education",
+      "Understanding Your Paycheck and W-2" ]},
+    { tier: 4, modules: [
+      "Creating a Financial Plan for Your Goals and Priorities",
+      "Getting Out of Debt",
+      "Managing Financial Stress" ]},
+    { tier: 5, modules: [
+      "Mastering Credit and Optimizing your Score",
+      "Using Credit Cards Responsibly",
+      "Repaying your Student Loans" ]},
+    { tier: 6, modules: [
+      "Securing Scholarships for your Higher Education",
+      "Staying on Track with Student Loans while in School",
+      "Buying or Leasing a Car" ]},
+    { tier: 7, modules: [
+      "Saving for Goals",
+      "Protecting Yourself from Identity Theft and Scams",
+      "Investing to Build Wealth" ]}
+  ];
+
+  var TOTAL_MODULES = 21;
+  var DATE_MIN = "2026-01-01";
+  var DATE_MAX = "2027-12-31";
+  var LEVELS = [
+    { tiers: 2, name: "Recognition Level I" },
+    { tiers: 4, name: "Recognition Level II" },
+    { tiers: 6, name: "Recognition Level III" },
+    { tiers: 7, name: "Full Program Completion" }
+  ];
+
+  var state = {
+    chapter: "", province: "", director: "", semester: "Fall 2026",
+    leaguers: []
+  };
+
+  /* ---------- storage ---------- */
+  function save(){
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ /* private mode / storage disabled — page still works for this session */ }
+  }
+  function load(){
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if(!raw) return;
+      var d = JSON.parse(raw);
+      if(d && typeof d === "object"){
+        state.chapter  = d.chapter  || "";
+        state.province = d.province || "";
+        state.director = d.director || "";
+        state.semester = d.semester || "Fall 2026";
+        state.leaguers = Array.isArray(d.leaguers) ? d.leaguers : [];
+      }
+    } catch(e){ /* ignore corrupt data */ }
+  }
+
+  /* ---------- helpers ---------- */
+  function esc(s){
+    return String(s == null ? "" : s)
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+  }
+  function uid(){ return "kl" + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function key(t,i){ return "t" + t + "m" + i; }
+
+  function deadlineFor(sem){
+    if(sem === "Fall 2026") return "2026-12-31";
+    if(sem === "Spring 2027") return "2027-05-31";
+    return "2027-05-31";
+  }
+  function fmtDate(iso){
+    if(!iso) return "";
+    var p = iso.split("-");
+    if(p.length !== 3) return iso;
+    var mo = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    var m = parseInt(p[1],10) - 1;
+    return (mo[m] || p[1]) + " " + parseInt(p[2],10) + ", " + p[0];
+  }
+
+  function moduleDone(l, t, i){
+    var r = l.modules[key(t,i)];
+    return !!(r && r.done);
+  }
+  function tiersComplete(l){
+    var n = 0;
+    for(var a=0;a<TIERS.length;a++){
+      var all = true;
+      for(var b=0;b<TIERS[a].modules.length;b++){
+        if(!moduleDone(l, TIERS[a].tier, b)){ all = false; break; }
+      }
+      if(all) n++;
+    }
+    return n;
+  }
+  function modulesComplete(l){
+    var n = 0;
+    for(var a=0;a<TIERS.length;a++)
+      for(var b=0;b<TIERS[a].modules.length;b++)
+        if(moduleDone(l, TIERS[a].tier, b)) n++;
+    return n;
+  }
+  function levelFor(n){
+    var lvl = null;
+    for(var i=0;i<LEVELS.length;i++) if(n >= LEVELS[i].tiers) lvl = LEVELS[i].name;
+    return lvl;
+  }
+  function lastDate(l){
+    var latest = "";
+    for(var a=0;a<TIERS.length;a++){
+      for(var b=0;b<TIERS[a].modules.length;b++){
+        var r = l.modules[key(TIERS[a].tier,b)];
+        if(r && r.done && r.date && r.date > latest) latest = r.date;
+      }
+    }
+    return latest;
+  }
+
+  function toast(msg){
+    var el = document.getElementById("toast");
+    el.textContent = msg;
+    el.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ el.classList.remove("show"); }, 2600);
+  }
+
+  /* ---------- rendering ---------- */
+  function renderSummary(){
+    var wrap = document.getElementById("summaryWrap");
+    if(!state.leaguers.length){
+      wrap.innerHTML = '<div class="empty"><p>No Kappa Leaguers added yet.</p>' +
+        '<p class="note">Add each Leaguer below, then check off modules as they are completed in iGrad.</p></div>';
+      return;
+    }
+    var rows = "";
+    for(var i=0;i<state.leaguers.length;i++){
+      var l = state.leaguers[i];
+      var mc = modulesComplete(l), tc = tiersComplete(l);
+      var pct = Math.round(mc / TOTAL_MODULES * 100);
+      var lvl = levelFor(tc);
+      var dots = "";
+      for(var t=1;t<=7;t++){
+        var full = true;
+        for(var b=0;b<3;b++) if(!moduleDone(l,t,b)){ full = false; break; }
+        dots += '<span class="' + (full ? "on" : "") + '" title="Tier ' + t + '">' + t + '</span>';
+      }
+      rows += '<tr>' +
+        '<td><b>' + esc(l.name) + '</b></td>' +
+        '<td><div class="tierdots">' + dots + '</div></td>' +
+        '<td class="num">' + tc + ' / 7</td>' +
+        '<td class="num">' + mc + ' / ' + TOTAL_MODULES + '</td>' +
+        '<td><div class="bar"><i style="width:' + pct + '%"></i></div></td>' +
+        '<td>' + (lvl ? '<span class="lvl">' + esc(lvl) + '</span>' : '<span class="lvl none">In progress</span>') + '</td>' +
+        '<td class="num">' + (lastDate(l) ? esc(fmtDate(lastDate(l))) : '&mdash;') + '</td>' +
+      '</tr>';
+    }
+    wrap.innerHTML =
+      '<div style="overflow-x:auto"><table class="tbl"><thead><tr>' +
+      '<th>Kappa Leaguer</th><th>Tiers</th><th class="num">Tiers Done</th><th class="num">Modules</th>' +
+      '<th>Progress</th><th>Recognition</th><th class="num">Last Completion</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
+  }
+
+  function renderLeaguers(){
+    var host = document.getElementById("leaguerList");
+    if(!state.leaguers.length){
+      host.innerHTML = '<div class="empty"><p>Use the field above to add your first Kappa Leaguer.</p></div>';
+      return;
+    }
+    var dl = deadlineFor(state.semester);
+    var html = "";
+    for(var i=0;i<state.leaguers.length;i++){
+      var l = state.leaguers[i];
+      var tc = tiersComplete(l), mc = modulesComplete(l);
+      var open = l._open ? " open" : "";
+      var tiersHtml = "";
+      for(var a=0;a<TIERS.length;a++){
+        var T = TIERS[a];
+        var doneCount = 0;
+        for(var b=0;b<T.modules.length;b++) if(moduleDone(l,T.tier,b)) doneCount++;
+        var tierDone = doneCount === T.modules.length;
+        var mods = "";
+        for(var m=0;m<T.modules.length;m++){
+          var k = key(T.tier,m);
+          var rec = l.modules[k] || {done:false,date:""};
+          var late = rec.done && rec.date && rec.date > dl;
+          mods += '<div class="mod' + (rec.done ? " done" : "") + '">' +
+            '<input type="checkbox" data-act="chk" data-id="' + l.id + '" data-key="' + k + '"' + (rec.done ? " checked" : "") + ' aria-label="Completed: ' + esc(T.modules[m]) + '">' +
+            '<span class="mname">' + esc(T.modules[m]) + '</span>' +
+            '<span class="dwrap"><label for="d_' + l.id + '_' + k + '">Date Completed</label>' +
+            '<input type="date" id="d_' + l.id + '_' + k + '" min="' + DATE_MIN + '" max="' + DATE_MAX + '" value="' + esc(rec.date || "") + '" data-act="date" data-id="' + l.id + '" data-key="' + k + '">' +
+            (late ? '<span class="late" title="After the reporting deadline">past due date</span>' : '') +
+            '</span></div>';
+        }
+        tiersHtml += '<div class="tier"><div class="tier-hd"><span>Tier ' + T.tier + '</span>' +
+          '<span class="st' + (tierDone ? " done" : "") + '">' + doneCount + ' of ' + T.modules.length + (tierDone ? ' &mdash; complete' : ' complete') + '</span></div>' +
+          mods + '</div>';
+      }
+      html += '<div class="leaguer' + open + '" data-lid="' + l.id + '">' +
+        '<div class="leaguer-hd" data-act="toggle" data-id="' + l.id + '">' +
+          '<span class="chev">&#9654;</span>' +
+          '<span class="nm">' + esc(l.name) + '</span>' +
+          '<span class="meta">' + tc + ' / 7 Tiers &middot; ' + mc + ' / ' + TOTAL_MODULES + ' modules</span>' +
+          '<button class="btn danger sm noprint" data-act="del" data-id="' + l.id + '">Remove</button>' +
+        '</div>' +
+        '<div class="leaguer-bd">' + tiersHtml + '</div>' +
+      '</div>';
+    }
+    host.innerHTML = html;
+  }
+
+  function render(){ renderSummary(); renderLeaguers(); }
+
+  /* Update one Leaguer's card in place, so ticking a box never rebuilds the
+     DOM under the user's cursor (keeps focus, scroll and open panels intact). */
+  function refreshLeaguer(l){
+    var card = document.querySelector('.leaguer[data-lid="' + l.id + '"]');
+    if(!card){ render(); return; }
+    var dl = deadlineFor(state.semester);
+
+    for(var a=0;a<TIERS.length;a++){
+      var T = TIERS[a], doneCount = 0;
+      for(var m=0;m<T.modules.length;m++){
+        var k = key(T.tier,m);
+        var rec = l.modules[k] || {done:false,date:""};
+        var box = card.querySelector('[data-act="chk"][data-key="' + k + '"]');
+        var dateEl = card.querySelector('[data-act="date"][data-key="' + k + '"]');
+        if(box){
+          box.checked = !!rec.done;
+          var row = box.closest(".mod");
+          if(row){
+            row.classList.toggle("done", !!rec.done);
+            var lateEl = row.querySelector(".late");
+            var isLate = rec.done && rec.date && rec.date > dl;
+            if(isLate && !lateEl){
+              var s = document.createElement("span");
+              s.className = "late";
+              s.title = "After the reporting deadline";
+              s.textContent = "past due date";
+              row.querySelector(".dwrap").appendChild(s);
+            } else if(!isLate && lateEl){
+              lateEl.remove();
+            }
+          }
+        }
+        if(dateEl && dateEl !== document.activeElement) dateEl.value = rec.date || "";
+        if(rec.done) doneCount++;
+      }
+      var st = card.querySelectorAll(".tier-hd .st")[a];
+      if(st){
+        var tierDone = doneCount === T.modules.length;
+        st.classList.toggle("done", tierDone);
+        st.innerHTML = doneCount + " of " + T.modules.length + (tierDone ? " &mdash; complete" : " complete");
+      }
+    }
+    var meta = card.querySelector(".leaguer-hd .meta");
+    if(meta) meta.innerHTML = tiersComplete(l) + " / 7 Tiers &middot; " + modulesComplete(l) + " / " + TOTAL_MODULES + " modules";
+    renderSummary();
+  }
+
+  /* ---------- CSV ---------- */
+  function csvCell(v){
+    v = String(v == null ? "" : v);
+    return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v;
+  }
+  function buildCSV(){
+    var head = ["Chapter Name","Chapter Province","Kappa League/Guide Right Director Name",
+                "Kappa Leaguer's Name","Tier","IGRAD Module","Completed","Date Completed",
+                "Tiers Completed","Modules Completed","Recognition Level","Reporting Period"];
+    var lines = [head.map(csvCell).join(",")];
+    for(var i=0;i<state.leaguers.length;i++){
+      var l = state.leaguers[i];
+      var tc = tiersComplete(l), mc = modulesComplete(l);
+      var lvl = levelFor(tc) || "In progress";
+      for(var a=0;a<TIERS.length;a++){
+        var T = TIERS[a];
+        for(var m=0;m<T.modules.length;m++){
+          var rec = l.modules[key(T.tier,m)] || {done:false,date:""};
+          lines.push([
+            state.chapter, state.province, state.director, l.name,
+            "Tier " + T.tier, T.modules[m],
+            rec.done ? "Yes" : "No",
+            rec.done ? (rec.date || "") : "",
+            tc, mc, lvl, state.semester
+          ].map(csvCell).join(","));
+        }
+      }
+    }
+    return lines.join("\r\n");
+  }
+  function exportCSV(){
+    if(!state.leaguers.length){ toast("Add at least one Kappa Leaguer first."); return; }
+    var slug = (state.chapter || "Chapter").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
+    var name = slug + "_KappaLeague_iGrad_" + state.semester.replace(/\s+/g,"-") + ".csv";
+    var blob = new Blob(["﻿" + buildCSV()], {type:"text/csv;charset=utf-8;"});
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1200);
+    toast("CSV exported: " + name);
+  }
+
+  /* ---------- print / certificate view ---------- */
+  function buildPrint(){
+    var area = document.getElementById("printArea");
+    var dl = deadlineFor(state.semester);
+    var html = "";
+    for(var i=0;i<state.leaguers.length;i++){
+      var l = state.leaguers[i];
+      var tc = tiersComplete(l), mc = modulesComplete(l);
+      var lvl = levelFor(tc);
+      var rows = "";
+      for(var a=0;a<TIERS.length;a++){
+        var T = TIERS[a];
+        for(var m=0;m<T.modules.length;m++){
+          var rec = l.modules[key(T.tier,m)] || {done:false,date:""};
+          rows += '<tr><td class="tr">' + (m === 0 ? "Tier " + T.tier : "") + '</td>' +
+            '<td>' + esc(T.modules[m]) + '</td>' +
+            '<td>' + (rec.done ? "Complete" : "&mdash;") + '</td>' +
+            '<td>' + (rec.done && rec.date ? esc(fmtDate(rec.date)) : "&mdash;") + '</td></tr>';
+        }
+      }
+      html += '<div class="psheet">' +
+        '<div class="phd"><h2>Kappa League &middot; iGrad Financial Literacy Record</h2>' +
+        '<div class="porg">National Guide Right Financial Literacy Initiative &middot; Kappa Alpha Psi Fraternity, Inc.</div></div>' +
+        '<div class="pmeta">' +
+          '<div><b>Kappa Leaguer:</b> ' + esc(l.name) + '</div>' +
+          '<div><b>Chapter:</b> ' + esc(state.chapter || "________________") + '</div>' +
+          '<div><b>Province:</b> ' + esc(state.province || "________________") + '</div>' +
+          '<div><b>Director:</b> ' + esc(state.director || "________________") + '</div>' +
+          '<div><b>Reporting Period:</b> ' + esc(state.semester) + '</div>' +
+          '<div><b>Due Date:</b> ' + esc(fmtDate(dl)) + '</div>' +
+        '</div>' +
+        '<div class="pstat"><b>Progress:</b> ' + tc + ' of 7 Tiers &middot; ' + mc + ' of ' + TOTAL_MODULES + ' modules completed' +
+          (lvl ? ' &nbsp;&bull;&nbsp; <b>Recognition earned: ' + esc(lvl) + '</b>' : ' &nbsp;&bull;&nbsp; Recognition awarded every two Tiers') +
+        '</div>' +
+        '<table class="ptbl"><thead><tr><th style="width:60px">Tier</th><th>iGrad Module</th><th style="width:80px">Status</th><th style="width:120px">Date Completed</th></tr></thead>' +
+        '<tbody>' + rows + '</tbody></table>' +
+        '<div class="psign"><div>Kappa Leaguer Signature</div><div>Kappa League / Guide Right Director</div><div>Date</div></div>' +
+      '</div>';
+    }
+    area.innerHTML = html;
+  }
+  function doPrint(){
+    if(!state.leaguers.length){ toast("Add at least one Kappa Leaguer first."); return; }
+    buildPrint();
+    window.print();
+  }
+  /* Also build the record sheets if the user prints straight from the browser
+     menu or Ctrl+P instead of using the button. */
+  window.addEventListener("beforeprint", buildPrint);
+
+  /* ---------- events ---------- */
+  function bindField(id, prop){
+    var el = document.getElementById(id);
+    el.value = state[prop];
+    el.addEventListener("input", function(){
+      state[prop] = el.value;
+      save();
+      if(prop === "semester") render();
+    });
+    el.addEventListener("change", function(){
+      state[prop] = el.value;
+      save();
+      if(prop === "semester") render();
+    });
+  }
+
+  function addLeaguer(){
+    var input = document.getElementById("newName");
+    var name = input.value.trim();
+    if(!name){ toast("Enter the Kappa Leaguer's name."); input.focus(); return; }
+    state.leaguers.push({ id: uid(), name: name, modules: {}, _open: true });
+    input.value = "";
+    save(); render();
+    toast(name + " added to the roster.");
+  }
+
+  function findLeaguer(id){
+    for(var i=0;i<state.leaguers.length;i++) if(state.leaguers[i].id === id) return state.leaguers[i];
+    return null;
+  }
+
+  document.getElementById("btnAdd").addEventListener("click", addLeaguer);
+  document.getElementById("newName").addEventListener("keydown", function(e){
+    if(e.key === "Enter"){ e.preventDefault(); addLeaguer(); }
+  });
+  document.getElementById("btnExport").addEventListener("click", exportCSV);
+  document.getElementById("btnPrint").addEventListener("click", doPrint);
+  document.getElementById("btnClear").addEventListener("click", function(){
+    if(!state.leaguers.length){ toast("Nothing to clear."); return; }
+    if(window.confirm("Clear the entire roster and all recorded completions? Export your CSV first if you need a copy.")){
+      state.leaguers = [];
+      save(); render();
+      toast("Roster cleared.");
+    }
+  });
+
+  document.getElementById("leaguerList").addEventListener("click", function(e){
+    var el = e.target.closest("[data-act]");
+    if(!el) return;
+    var act = el.getAttribute("data-act");
+    var l = findLeaguer(el.getAttribute("data-id"));
+    if(!l) return;
+
+    if(act === "del"){
+      e.stopPropagation();
+      if(window.confirm('Remove "' + l.name + '" and all recorded completions?')){
+        state.leaguers = state.leaguers.filter(function(x){ return x.id !== l.id; });
+        save(); render();
+        toast("Removed from roster.");
+      }
+      return;
+    }
+    if(act === "toggle"){
+      l._open = !l._open;
+      var card = el.closest(".leaguer");
+      if(card) card.classList.toggle("open", !!l._open);
+      save();
+      return;
+    }
+    if(act === "chk"){
+      var k = el.getAttribute("data-key");
+      var rec = l.modules[k] || {done:false,date:""};
+      rec.done = el.checked;
+      if(rec.done && !rec.date){
+        var d = new Date();
+        rec.date = d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+        if(rec.date < DATE_MIN) rec.date = DATE_MIN;
+        if(rec.date > DATE_MAX) rec.date = DATE_MAX;
+      }
+      if(!rec.done) rec.date = "";
+      l.modules[k] = rec;
+      save(); refreshLeaguer(l);
+    }
+  });
+
+  document.getElementById("leaguerList").addEventListener("change", function(e){
+    var el = e.target.closest('[data-act="date"]');
+    if(!el) return;
+    var l = findLeaguer(el.getAttribute("data-id"));
+    if(!l) return;
+    var k = el.getAttribute("data-key");
+    var rec = l.modules[k] || {done:false,date:""};
+    rec.date = el.value;
+    if(rec.date) rec.done = true;
+    l.modules[k] = rec;
+    save(); refreshLeaguer(l);
+  });
+
+  /* ---------- init ---------- */
+  load();
+  bindField("chapter","chapter");
+  bindField("province","province");
+  bindField("director","director");
+  bindField("semester","semester");
+  render();
+})();
+</script>
+</body>
+</html>
